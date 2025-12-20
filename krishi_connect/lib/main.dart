@@ -4,7 +4,12 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:krishi_connect/core/provider/theme_provider.dart';
 import 'package:krishi_connect/core/routes/app_router.dart';
 import 'package:krishi_connect/core/theme/app_theme.dart';
+import 'package:krishi_connect/provider/admin_provider.dart';
 import 'package:krishi_connect/provider/api_provider.dart';
+import 'package:krishi_connect/provider/auth_provider.dart';
+import 'package:krishi_connect/provider/farmer_provider.dart';
+import 'package:krishi_connect/provider/weather_provider.dart';
+import 'package:krishi_connect/repo/api.dart';
 import 'package:provider/provider.dart';
 
 void main() async {
@@ -27,8 +32,20 @@ class KrishiConnectApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
 
-        /// 🔥 GENERATED OPENAPI PROVIDER
         ChangeNotifierProvider(create: (_) => ApiProvider()),
+        ChangeNotifierProxyProvider<ApiClient, AuthProvider>(
+          create: (context) => AuthProvider(context.read<ApiClient>()),
+          update: (_, api, __) => AuthProvider(api),
+        ),
+        ChangeNotifierProxyProvider<ApiClient, AdminProvider>(
+          create: (context) => AdminProvider(context.read<ApiClient>()),
+          update: (_, api, __) => AdminProvider(api),
+        ),
+        ChangeNotifierProxyProvider<ApiClient, FarmerProvider>(
+          create: (context) => FarmerProvider(context.read<ApiClient>()),
+          update: (_, api, __) => FarmerProvider(api),
+        ),
+        ChangeNotifierProvider(create: (_) => WeatherProvider()),
       ],
       child: ScreenUtilInit(
         designSize: const Size(375, 812),
