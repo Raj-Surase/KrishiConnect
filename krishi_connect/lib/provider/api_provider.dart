@@ -12,9 +12,7 @@ class ApiProvider with ChangeNotifier {
   String? _token;
 
   ApiProvider() {
-    _apiClient = ApiClient(
-      basePath: "http://localhost:8000", // 🔴 CHANGE THIS
-    );
+    _apiClient = ApiClient(basePath: "http://10.146.133.249:8000");
 
     _initApis();
   }
