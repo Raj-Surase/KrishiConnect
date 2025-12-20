@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:krishi_connect/screen/admin/admin_home.dart';
+import 'package:krishi_connect/screen/admin/admin_home_screen.dart';
+import 'package:krishi_connect/screen/admin/admin_navigator.dart';
 import 'package:krishi_connect/screen/auth/authentication_screen.dart';
 import 'package:krishi_connect/screen/splash_screen.dart';
-import 'package:krishi_connect/screen/user/user_home.dart';
-import 'package:provider/provider.dart';
+import 'package:krishi_connect/screen/user/user_home_screen.dart';
+import 'package:krishi_connect/screen/user/user_navigator.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
@@ -12,9 +13,9 @@ class AppRouter {
   static const String splashRoute = '/splash';
   static const String authRoute = '/auth';
 
-  static const String userHomeRoute = '/user';
+  static const String UserHomeScreenRoute = '/user';
 
-  static const String adminHomeRoute = '/admin';
+  static const String AdminHomeScreenRoute = '/admin';
 
   static final router = GoRouter(
     navigatorKey: navigatorKey,
@@ -29,12 +30,12 @@ class AppRouter {
         builder: (context, state) => const AuthenticationScreen(),
       ),
       GoRoute(
-        path: userHomeRoute,
-        builder: (context, state) => const UserHome(),
+        path: UserHomeScreenRoute,
+        builder: (context, state) => const UserNavigator(),
       ),
       GoRoute(
-        path: adminHomeRoute,
-        builder: (context, state) => const AdminHome(),
+        path: AdminHomeScreenRoute,
+        builder: (context, state) => const AdminNavigator(),
       ),
     ],
   );

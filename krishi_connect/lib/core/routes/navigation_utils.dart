@@ -10,7 +10,7 @@
 
 //       switch (role) {
 //         case UserRole.user:
-//           context.go(AppRouter.userHomeRoute);
+//           context.go(AppRouter.UserHomeScreenRoute);
 //           break;
 //         case UserRole.subadmin:
 //           context.go(AppRouter.subadminDashboardRoute);
