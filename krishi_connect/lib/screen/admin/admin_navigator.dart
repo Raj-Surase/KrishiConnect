@@ -1,9 +1,16 @@
+// admin_navigator.dart
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:provider/provider.dart';
+
 import 'package:krishi_connect/core/custom_widgets/custom_scaffold.dart';
 import 'package:krishi_connect/core/custom_widgets/logout_dialog.dart';
 import 'package:krishi_connect/core/theme/theme_extenstion.dart';
 import 'package:krishi_connect/core/utils/app_assets.dart';
+
+import 'package:krishi_connect/provider/farmer_provider.dart';
+
 import 'package:krishi_connect/screen/admin/admin_home_screen.dart';
 import 'package:krishi_connect/screen/admin/admin_crop_screen.dart';
 import 'package:krishi_connect/screen/admin/admin_schemes_screen.dart';
@@ -25,6 +32,17 @@ class _AdminNavigatorState extends State<AdminNavigator> {
     AdminSchemesScreen(),
     AdminMarketRateScreen(),
   ];
+
+  @override
+  void initState() {
+    super.initState();
+
+    /// ✅ Fetch READ-ONLY data via FarmerProvider
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      context.read<FarmerProvider>().initialize();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {

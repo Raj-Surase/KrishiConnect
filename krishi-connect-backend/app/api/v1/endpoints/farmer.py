@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 
 from app.core.database import get_db
 from app.db.models import User
-from app.utils.dependencies import get_current_farmer_user
+from app.utils.dependencies import get_current_farmer_or_admin_user, get_current_farmer_user
 from app.services import ai_service, content_service
 from app.api.v1.schemas.content import Crop, GovernmentScheme, MarketRate
 from app.api.v1.schemas.chatbot import ChatbotMessage, ChatbotResponse
@@ -24,7 +24,7 @@ def list_crops(
     skip: int = 0,
     limit: int = 100,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_farmer_user)
+    current_user: User = Depends(get_current_farmer_or_admin_user)
 ):
     """List all available crops for advisory and market rates."""
     return content_service.get_crops(db, skip=skip, limit=limit)
@@ -34,7 +34,7 @@ def list_schemes(
     skip: int = 0,
     limit: int = 100,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_farmer_user)
+    current_user: User = Depends(get_current_farmer_or_admin_user)
 ):
     """List all government schemes."""
     return content_service.get_schemes(db, skip=skip, limit=limit)
@@ -88,7 +88,7 @@ def list_market_rates(
     skip: int = 0,
     limit: int = 100,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_farmer_user)
+    current_user: User = Depends(get_current_farmer_or_admin_user)
 ):
     """List daily market rates, with optional filters."""
     # Simple filtering logic can be added to content_service.get_market_rates

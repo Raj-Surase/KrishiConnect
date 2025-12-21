@@ -20,21 +20,22 @@ class UserCropScreen extends StatelessWidget {
       return Center(child: Text(provider.error!));
     }
 
-    return ListView.builder(
-      padding: const EdgeInsets.all(16),
-      itemCount: provider.crops.length,
-      itemBuilder: (context, index) {
-        final crop = provider.crops[index];
-        return Card(
-          child: ListTile(
-            leading: crop.imageUrl != null
-                ? Image.network(crop.imageUrl!, height: 20.h, width: 20.h)
-                : Icon(Icons.grass_rounded),
-            title: Text(crop.name),
-            subtitle: Text(crop.details ?? "No details available"),
-          ),
-        );
-      },
+    return Padding(
+      padding: EdgeInsets.all(20.w),
+      child: ListView.builder(
+        itemCount: provider.crops.length,
+        itemBuilder: (context, index) {
+          final crop = provider.crops[index];
+          return Card(
+            child: ListTile(
+              leading: crop.imageUrl != null
+                  ? Image.network(crop.imageUrl!, height: 40.h, width: 40.h)
+                  : Icon(Icons.grass_rounded),
+              title: Text(crop.name),
+            ),
+          );
+        },
+      ),
     );
   }
 }

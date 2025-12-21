@@ -18,6 +18,10 @@ class AdminProvider with ChangeNotifier {
   bool get loading => _loading;
   String? get error => _error;
 
+  /* =========================
+     🌾 CROPS
+  ========================== */
+
   Future<Crop?> createCrop(CropCreate data) async {
     return _wrap(() => _adminApi.createNewCropApiV1AdminCropsPost(data));
   }
@@ -31,6 +35,59 @@ class AdminProvider with ChangeNotifier {
   Future<void> deleteCrop(int id) async {
     await _wrap(() => _adminApi.deleteCropApiV1AdminCropsCropIdDelete(id));
   }
+
+  /* =========================
+     🏛️ GOVERNMENT SCHEMES
+  ========================== */
+
+  Future<GovernmentScheme?> createScheme(GovernmentSchemeCreate data) async {
+    return _wrap(() => _adminApi.createNewSchemeApiV1AdminSchemesPost(data));
+  }
+
+  Future<GovernmentScheme?> updateScheme(
+    int id,
+    GovernmentSchemeUpdate data,
+  ) async {
+    return _wrap(
+      () =>
+          _adminApi.updateExistingSchemeApiV1AdminSchemesSchemeIdPut(id, data),
+    );
+  }
+
+  Future<void> deleteScheme(int id) async {
+    await _wrap(
+      () => _adminApi.deleteSchemeApiV1AdminSchemesSchemeIdDelete(id),
+    );
+  }
+
+  /* =========================
+     📊 MARKET RATES
+  ========================== */
+
+  Future<MarketRate?> createMarketRate(MarketRateCreate data) async {
+    return _wrap(
+      () => _adminApi.createNewMarketRateApiV1AdminMarketRatesPost(data),
+    );
+  }
+
+  Future<MarketRate?> updateMarketRate(int id, MarketRateUpdate data) async {
+    return _wrap(
+      () => _adminApi.updateExistingMarketRateApiV1AdminMarketRatesRateIdPut(
+        id,
+        data,
+      ),
+    );
+  }
+
+  Future<void> deleteMarketRate(int id) async {
+    await _wrap(
+      () => _adminApi.deleteMarketRateApiV1AdminMarketRatesRateIdDelete(id),
+    );
+  }
+
+  /* =========================
+     🔁 COMMON WRAPPER
+  ========================== */
 
   Future<T> _wrap<T>(Future<T> Function() action) async {
     _setLoading(true);
