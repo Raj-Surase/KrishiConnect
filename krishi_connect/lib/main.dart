@@ -32,44 +32,52 @@ class KrishiConnectApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
 
-        /// ✅ PROVIDE ApiClient FIRST
+        /// ✅ SINGLE ApiClient INSTANCE
         Provider<ApiClient>(
           create: (_) => ApiClient(basePath: "http://10.146.133.249:8000"),
         ),
 
-        /// ✅ ApiProvider depends on ApiClient
+        /// ✅ ApiProvider (REUSED)
         ChangeNotifierProxyProvider<ApiClient, ApiProvider>(
           create: (context) => ApiProvider(context.read<ApiClient>()),
-          update: (_, apiClient, __) => ApiProvider(apiClient),
+          update: (_, apiClient, apiProvider) {
+            apiProvider!.updateApiClient(apiClient);
+            return apiProvider;
+          },
         ),
 
-        /// ✅ AuthProvider
+        /// ✅ AuthProvider (ALREADY FIXED)
         ChangeNotifierProxyProvider<ApiClient, AuthProvider>(
           create: (context) => AuthProvider(context.read<ApiClient>()),
-          update: (_, apiClient, __) => AuthProvider(apiClient),
+          update: (_, apiClient, authProvider) {
+            authProvider!.updateApiClient(apiClient);
+            return authProvider;
+          },
         ),
 
         /// ✅ AdminProvider
         ChangeNotifierProxyProvider<ApiClient, AdminProvider>(
           create: (context) => AdminProvider(context.read<ApiClient>()),
-          update: (_, apiClient, __) => AdminProvider(apiClient),
+          update: (_, apiClient, adminProvider) {
+            adminProvider!.updateApiClient(apiClient);
+            return adminProvider;
+          },
         ),
 
-        /// ✅ FarmerProvider (ERROR FIXED HERE)
+        /// ✅ FarmerProvider
         ChangeNotifierProxyProvider<ApiClient, FarmerProvider>(
           create: (context) => FarmerProvider(context.read<ApiClient>()),
-          update: (_, apiClient, __) => FarmerProvider(apiClient),
+          update: (_, apiClient, farmerProvider) {
+            farmerProvider!.updateApiClient(apiClient);
+            return farmerProvider;
+          },
         ),
 
         ChangeNotifierProvider(create: (_) => WeatherProvider()),
       ],
-
       child: ScreenUtilInit(
         designSize: const Size(375, 812),
-        minTextAdapt: true,
-        splitScreenMode: true,
-        useInheritedMediaQuery: true,
-        builder: (context, child) {
+        builder: (context, _) {
           return MaterialApp.router(
             debugShowCheckedModeBanner: false,
             theme: AppTheme.lightTheme,

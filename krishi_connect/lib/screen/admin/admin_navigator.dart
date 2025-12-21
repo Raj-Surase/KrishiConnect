@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:krishi_connect/core/custom_widgets/custom_scaffold.dart';
+import 'package:krishi_connect/core/custom_widgets/logout_dialog.dart';
 import 'package:krishi_connect/core/theme/theme_extenstion.dart';
 import 'package:krishi_connect/core/utils/app_assets.dart';
 import 'package:krishi_connect/screen/admin/admin_home_screen.dart';
@@ -43,7 +44,7 @@ class _AdminNavigatorState extends State<AdminNavigator> {
         ),
         actions: [
           IconButton(
-            onPressed: () {},
+            onPressed: () => showLogoutDialog(context),
             icon: Icon(
               Icons.person_rounded,
               color: context.colorTheme.onSurface,

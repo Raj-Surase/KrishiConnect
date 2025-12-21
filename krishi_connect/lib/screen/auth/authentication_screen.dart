@@ -3,9 +3,11 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:krishi_connect/core/custom_widgets/common_container.dart';
 import 'package:krishi_connect/core/custom_widgets/custom_scaffold.dart';
+import 'package:krishi_connect/core/routes/app_router.dart';
 import 'package:krishi_connect/core/theme/theme_extenstion.dart';
 import 'package:krishi_connect/core/utils/app_assets.dart';
 import 'package:krishi_connect/provider/api_provider.dart';
+import 'package:krishi_connect/provider/auth_provider.dart';
 import 'package:krishi_connect/repo/api.dart';
 import 'package:provider/provider.dart';
 
@@ -29,25 +31,19 @@ class _AuthenticationScreenState extends State<AuthenticationScreen> {
     setState(() => loading = true);
 
     try {
-      final api = context.read<ApiProvider>();
+      final auth = context.read<AuthProvider>();
 
-      final token = await api.authApi.loginForAccessTokenApiV1AuthLoginPost(
+      await auth.login(
         _usernameController.text.trim(),
         _passwordController.text.trim(),
       );
 
-      if (token == null) throw Exception("Invalid credentials");
-
-      api.setToken(token.accessToken);
-
-      final user = await api.authApi.readUsersMeApiV1AuthMeGet();
-
       if (!mounted) return;
 
-      if (user?.role == 'admin') {
-        context.go('/admin');
+      if (auth.user?.role == 'admin') {
+        context.go(AppRouter.adminHomeScreenRoute);
       } else {
-        context.go('/user');
+        context.go(AppRouter.userHomeScreenRoute);
       }
     } catch (e) {
       _showError(e.toString());

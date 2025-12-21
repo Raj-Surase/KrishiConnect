@@ -2,9 +2,15 @@ import 'package:flutter/foundation.dart';
 import 'package:krishi_connect/repo/api.dart';
 
 class AdminProvider with ChangeNotifier {
-  final AdminApi _adminApi;
+  late AdminApi _adminApi;
 
-  AdminProvider(ApiClient apiClient) : _adminApi = AdminApi(apiClient);
+  AdminProvider(ApiClient apiClient) {
+    updateApiClient(apiClient);
+  }
+
+  void updateApiClient(ApiClient apiClient) {
+    _adminApi = AdminApi(apiClient);
+  }
 
   bool _loading = false;
   String? _error;
@@ -24,47 +30,6 @@ class AdminProvider with ChangeNotifier {
 
   Future<void> deleteCrop(int id) async {
     await _wrap(() => _adminApi.deleteCropApiV1AdminCropsCropIdDelete(id));
-  }
-
-  Future<MarketRate?> createMarketRate(MarketRateCreate data) async {
-    return _wrap(
-      () => _adminApi.createNewMarketRateApiV1AdminMarketRatesPost(data),
-    );
-  }
-
-  Future<MarketRate?> updateMarketRate(int id, MarketRateUpdate data) async {
-    return _wrap(
-      () => _adminApi.updateExistingMarketRateApiV1AdminMarketRatesRateIdPut(
-        id,
-        data,
-      ),
-    );
-  }
-
-  Future<void> deleteMarketRate(int id) async {
-    await _wrap(
-      () => _adminApi.deleteMarketRateApiV1AdminMarketRatesRateIdDelete(id),
-    );
-  }
-
-  Future<GovernmentScheme?> createScheme(GovernmentSchemeCreate data) async {
-    return _wrap(() => _adminApi.createNewSchemeApiV1AdminSchemesPost(data));
-  }
-
-  Future<GovernmentScheme?> updateScheme(
-    int id,
-    GovernmentSchemeUpdate data,
-  ) async {
-    return _wrap(
-      () =>
-          _adminApi.updateExistingSchemeApiV1AdminSchemesSchemeIdPut(id, data),
-    );
-  }
-
-  Future<void> deleteScheme(int id) async {
-    await _wrap(
-      () => _adminApi.deleteSchemeApiV1AdminSchemesSchemeIdDelete(id),
-    );
   }
 
   Future<T> _wrap<T>(Future<T> Function() action) async {

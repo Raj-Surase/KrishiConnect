@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:krishi_connect/core/custom_widgets/logout_dialog.dart';
 import 'package:provider/provider.dart';
 
 import 'package:krishi_connect/core/custom_widgets/custom_scaffold.dart';
@@ -65,6 +66,17 @@ class _UserNavigatorState extends State<UserNavigator> {
             ),
           ],
         ),
+        actions: [
+          IconButton(
+            onPressed: () => showLogoutDialog(context),
+            icon: Icon(
+              Icons.person_rounded,
+              color: context.colorTheme.onSurface,
+              size: 24.sp,
+            ),
+          ),
+          20.horizontalSpace,
+        ],
       ),
       body: IndexedStack(index: _currentIndex, children: _screens),
       bottomNavigationBar: BottomNavigationBar(

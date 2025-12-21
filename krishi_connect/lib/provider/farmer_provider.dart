@@ -2,14 +2,19 @@ import 'package:flutter/foundation.dart';
 import 'package:krishi_connect/repo/api.dart';
 
 class FarmerProvider with ChangeNotifier {
-  final FarmerApi _farmerApi;
+  late FarmerApi _farmerApi;
 
-  FarmerProvider(ApiClient apiClient) : _farmerApi = FarmerApi(apiClient);
+  FarmerProvider(ApiClient apiClient) {
+    updateApiClient(apiClient);
+  }
+
+  void updateApiClient(ApiClient apiClient) {
+    _farmerApi = FarmerApi(apiClient);
+  }
 
   bool _loading = false;
   String? _error;
-
-  bool _initialized = false; // 🔥 KEY
+  bool _initialized = false;
 
   List<Crop> crops = [];
   List<MarketRate> marketRates = [];
@@ -18,11 +23,11 @@ class FarmerProvider with ChangeNotifier {
   bool get loading => _loading;
   String? get error => _error;
 
-  /// 🚀 CALL THIS SAFELY ANYTIME
+  /// ✅ SAFE INIT (HOT-RELOAD PROOF)
   Future<void> initialize() async {
     if (_initialized) return;
-
     _initialized = true;
+
     await Future.wait([loadCrops(), loadSchemes(), loadMarketRates()]);
   }
 

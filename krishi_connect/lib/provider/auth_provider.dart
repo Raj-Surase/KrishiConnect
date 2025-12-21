@@ -1,10 +1,22 @@
 import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:krishi_connect/repo/api.dart';
 
 class AuthProvider with ChangeNotifier {
-  final AuthenticationApi _authApi;
+  late ApiClient _apiClient;
+  late AuthenticationApi _authApi;
 
-  AuthProvider(ApiClient apiClient) : _authApi = AuthenticationApi(apiClient);
+  AuthProvider(ApiClient apiClient) {
+    updateApiClient(apiClient);
+  }
+
+  void updateApiClient(ApiClient apiClient) {
+    _apiClient = apiClient;
+    _authApi = AuthenticationApi(_apiClient);
+  }
+
+  static const _tokenKey = 'auth_token';
+  static const _roleKey = 'user_role';
 
   bool _loading = false;
   String? _error;
@@ -16,6 +28,7 @@ class AuthProvider with ChangeNotifier {
   User? get user => _user;
   bool get isAuthenticated => _token != null;
 
+  /// 🔐 LOGIN + CACHE TOKEN
   Future<void> login(String username, String password) async {
     _setLoading(true);
     try {
@@ -23,9 +36,24 @@ class AuthProvider with ChangeNotifier {
         username,
         password,
       );
-      if (_token == null) throw Exception("Invalid credentials");
+
+      if (_token == null || _token!.accessToken.isEmpty) {
+        throw Exception("Invalid credentials");
+      }
+
+      /// Attach token to ApiClient
+      _apiClient.addDefaultHeader(
+        "Authorization",
+        "Bearer ${_token!.accessToken}",
+      );
 
       _user = await _authApi.readUsersMeApiV1AuthMeGet();
+
+      /// Cache token + role
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_tokenKey, _token!.accessToken);
+      await prefs.setString(_roleKey, _user!.role);
+
       _error = null;
     } catch (e) {
       _error = e.toString();
@@ -35,22 +63,45 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
-  Future<void> register(UserCreate user) async {
+  /// 🔄 RESTORE SESSION (USED IN SPLASH)
+  Future<bool> restoreSession() async {
     _setLoading(true);
     try {
-      await _authApi.registerUserApiV1AuthRegisterPost(user);
-      _error = null;
-    } catch (e) {
-      _error = e.toString();
-      rethrow;
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString(_tokenKey);
+
+      if (token == null || token.isEmpty) {
+        return false;
+      }
+
+      /// Attach cached token
+      _apiClient.addDefaultHeader("Authorization", "Bearer $token");
+
+      _token = Token(accessToken: token, tokenType: "bearer");
+
+      /// Fetch user again (validates token)
+      _user = await _authApi.readUsersMeApiV1AuthMeGet();
+
+      return true;
+    } catch (_) {
+      await logout(); // token invalid
+      return false;
     } finally {
       _setLoading(false);
     }
   }
 
-  void logout() {
+  /// 🚪 LOGOUT (CLEAR CACHE)
+  Future<void> logout() async {
     _token = null;
     _user = null;
+
+    _apiClient.defaultHeaderMap.remove("Authorization");
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_tokenKey);
+    await prefs.remove(_roleKey);
+
     notifyListeners();
   }
 

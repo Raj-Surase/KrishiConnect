@@ -13,13 +13,13 @@ class AppRouter {
   static const String splashRoute = '/splash';
   static const String authRoute = '/auth';
 
-  static const String UserHomeScreenRoute = '/user';
+  static const String userHomeScreenRoute = '/user';
 
-  static const String AdminHomeScreenRoute = '/admin';
+  static const String adminHomeScreenRoute = '/admin';
 
   static final router = GoRouter(
     navigatorKey: navigatorKey,
-    initialLocation: authRoute,
+    initialLocation: splashRoute,
     routes: [
       GoRoute(
         path: splashRoute,
@@ -30,11 +30,11 @@ class AppRouter {
         builder: (context, state) => const AuthenticationScreen(),
       ),
       GoRoute(
-        path: UserHomeScreenRoute,
+        path: userHomeScreenRoute,
         builder: (context, state) => const UserNavigator(),
       ),
       GoRoute(
-        path: AdminHomeScreenRoute,
+        path: adminHomeScreenRoute,
         builder: (context, state) => const AdminNavigator(),
       ),
     ],
