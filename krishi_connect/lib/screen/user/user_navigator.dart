@@ -1,8 +1,15 @@
+// user_navigator.dart
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:provider/provider.dart';
+
 import 'package:krishi_connect/core/custom_widgets/custom_scaffold.dart';
 import 'package:krishi_connect/core/theme/theme_extenstion.dart';
 import 'package:krishi_connect/core/utils/app_assets.dart';
+
+import 'package:krishi_connect/provider/weather_provider.dart';
+
 import 'package:krishi_connect/screen/user/user_home_screen.dart';
 import 'package:krishi_connect/screen/user/user_crop_screen.dart';
 import 'package:krishi_connect/screen/user/user_schemes_screen.dart';
@@ -17,6 +24,7 @@ class UserNavigator extends StatefulWidget {
 
 class _UserNavigatorState extends State<UserNavigator> {
   int _currentIndex = 0;
+  bool _weatherFetched = false;
 
   final _screens = const [
     UserHomeScreen(),
@@ -24,6 +32,20 @@ class _UserNavigatorState extends State<UserNavigator> {
     UserSchemesScreen(),
     UserMarketRateScreen(),
   ];
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    /// ✅ Fetch weather ONCE when navigator is ready
+    if (!_weatherFetched) {
+      context.read<WeatherProvider>().fetchFutureWeather(
+        location: "Kopargaon",
+        date: "2026-01-15",
+      );
+      _weatherFetched = true;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -54,7 +76,7 @@ class _UserNavigatorState extends State<UserNavigator> {
         ],
       ),
 
-      /// 🔥 KEEP STATE BETWEEN TABS
+      /// 🔥 STATE PRESERVED BETWEEN TABS
       body: IndexedStack(index: _currentIndex, children: _screens),
 
       bottomNavigationBar: BottomNavigationBar(

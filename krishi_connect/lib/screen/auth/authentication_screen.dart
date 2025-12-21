@@ -88,14 +88,15 @@ class _AuthenticationScreenState extends State<AuthenticationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: AppScaffold(
-        resizeToAvoidBottomInset: true,
-        body: SingleChildScrollView(
+    return AppScaffold(
+      resizeToAvoidBottomInset: true,
+
+      body: SafeArea(
+        child: SingleChildScrollView(
           padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 20.h),
           child: Column(
             children: [
-              SizedBox(height: 150.h, child: Image.asset(AppAssets.appLogo)),
+              SizedBox(height: 200.h, child: Image.asset(AppAssets.appBanner)),
               30.verticalSpace,
 
               CommonContainer(

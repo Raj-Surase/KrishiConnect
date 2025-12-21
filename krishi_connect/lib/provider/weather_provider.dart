@@ -1,44 +1,32 @@
+// weather_provider.dart
+
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
-import 'package:http/http.dart' as http;
 import 'package:krishi_connect/repo/model/weather.dart';
 
 class WeatherProvider with ChangeNotifier {
-  static const String _apiKey =
-      '8c741249a1c94f92b6f173421252012'; // 🔴 put key here
-  static const String _baseUrl = 'https://api.weatherapi.com/v1/current.json';
-
-  WeatherModel? _weather;
+  WeatherFutureResponse? _weather;
   bool _loading = false;
   String? _error;
 
-  bool _fetchedOnce = false;
-
-  WeatherModel? get weather => _weather;
+  WeatherFutureResponse? get weather => _weather;
   bool get loading => _loading;
   String? get error => _error;
 
-  /// 🚀 Fetch weather ONLY ONCE
-  Future<void> fetchWeatherOnce({
-    required String location, // e.g. Pune, Maharashtra
+  Future<void> fetchFutureWeather({
+    required String location,
+    required String date, // yyyy-MM-dd
   }) async {
-    if (_fetchedOnce) return;
-
     _loading = true;
     notifyListeners();
 
     try {
-      final uri = Uri.parse('$_baseUrl?key=$_apiKey&q=$location&aqi=no');
+      /// 🔁 Replace `mockWeatherJson` with API response when moving to production
+      final Map<String, dynamic> jsonData = jsonDecode(
+        mockWeatherJson,
+      ); // <-- ONE LINE TO SWITCH
 
-      final response = await http.get(uri);
-
-      if (response.statusCode != 200) {
-        throw Exception("Failed to fetch weather");
-      }
-
-      final jsonData = jsonDecode(response.body);
-      _weather = WeatherModel.fromJson(jsonData);
-      _fetchedOnce = true;
+      _weather = WeatherFutureResponse.fromJson(jsonData);
       _error = null;
     } catch (e) {
       _error = e.toString();
@@ -48,3 +36,44 @@ class WeatherProvider with ChangeNotifier {
     }
   }
 }
+
+const String mockWeatherJson = '''
+{
+  "location": {
+    "name": "Kopargaon",
+    "region": "Maharashtra",
+    "country": "India",
+    "lat": 19.8833,
+    "lon": 74.4833,
+    "tz_id": "Asia/Kolkata",
+    "localtime_epoch": 1766303792,
+    "localtime": "2025-12-21 13:26"
+  },
+  "forecast": {
+    "forecastday": [
+      {
+        "date": "2026-01-15",
+        "date_epoch": 1768435200,
+        "day": {
+          "maxtemp_c": 29.5,
+          "mintemp_c": 16.2,
+          "avgtemp_c": 22.7,
+          "avghumidity": 39,
+          "condition": {
+            "text": "Sunny",
+            "icon": "//cdn.weatherapi.com/weather/64x64/day/113.png",
+            "code": 1000
+          },
+          "uv": 6
+        },
+        "astro": {
+          "sunrise": "07:10 AM",
+          "sunset": "06:13 PM",
+          "moon_phase": "Waning Crescent"
+        },
+        "hour": []
+      }
+    ]
+  }
+}
+''';
