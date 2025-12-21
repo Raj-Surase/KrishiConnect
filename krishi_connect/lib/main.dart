@@ -32,21 +32,38 @@ class KrishiConnectApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
 
-        ChangeNotifierProvider(create: (_) => ApiProvider()),
+        /// ✅ PROVIDE ApiClient FIRST
+        Provider<ApiClient>(
+          create: (_) => ApiClient(basePath: "http://10.146.133.249:8000"),
+        ),
+
+        /// ✅ ApiProvider depends on ApiClient
+        ChangeNotifierProxyProvider<ApiClient, ApiProvider>(
+          create: (context) => ApiProvider(context.read<ApiClient>()),
+          update: (_, apiClient, __) => ApiProvider(apiClient),
+        ),
+
+        /// ✅ AuthProvider
         ChangeNotifierProxyProvider<ApiClient, AuthProvider>(
           create: (context) => AuthProvider(context.read<ApiClient>()),
-          update: (_, api, __) => AuthProvider(api),
+          update: (_, apiClient, __) => AuthProvider(apiClient),
         ),
+
+        /// ✅ AdminProvider
         ChangeNotifierProxyProvider<ApiClient, AdminProvider>(
           create: (context) => AdminProvider(context.read<ApiClient>()),
-          update: (_, api, __) => AdminProvider(api),
+          update: (_, apiClient, __) => AdminProvider(apiClient),
         ),
+
+        /// ✅ FarmerProvider (ERROR FIXED HERE)
         ChangeNotifierProxyProvider<ApiClient, FarmerProvider>(
           create: (context) => FarmerProvider(context.read<ApiClient>()),
-          update: (_, api, __) => FarmerProvider(api),
+          update: (_, apiClient, __) => FarmerProvider(apiClient),
         ),
+
         ChangeNotifierProvider(create: (_) => WeatherProvider()),
       ],
+
       child: ScreenUtilInit(
         designSize: const Size(375, 812),
         minTextAdapt: true,

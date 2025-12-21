@@ -1,4 +1,4 @@
-// user_navigator.dart
+// user_navigator.dart (UPDATED)
 
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -9,6 +9,7 @@ import 'package:krishi_connect/core/theme/theme_extenstion.dart';
 import 'package:krishi_connect/core/utils/app_assets.dart';
 
 import 'package:krishi_connect/provider/weather_provider.dart';
+import 'package:krishi_connect/provider/farmer_provider.dart';
 
 import 'package:krishi_connect/screen/user/user_home_screen.dart';
 import 'package:krishi_connect/screen/user/user_crop_screen.dart';
@@ -24,7 +25,6 @@ class UserNavigator extends StatefulWidget {
 
 class _UserNavigatorState extends State<UserNavigator> {
   int _currentIndex = 0;
-  bool _weatherFetched = false;
 
   final _screens = const [
     UserHomeScreen(),
@@ -34,17 +34,19 @@ class _UserNavigatorState extends State<UserNavigator> {
   ];
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
+  void initState() {
+    super.initState();
 
-    /// ✅ Fetch weather ONCE when navigator is ready
-    if (!_weatherFetched) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+
       context.read<WeatherProvider>().fetchFutureWeather(
         location: "Kopargaon",
         date: "2026-01-15",
       );
-      _weatherFetched = true;
-    }
+
+      context.read<FarmerProvider>().initialize(); // ✅ SAFE
+    });
   }
 
   @override
@@ -63,22 +65,8 @@ class _UserNavigatorState extends State<UserNavigator> {
             ),
           ],
         ),
-        actions: [
-          IconButton(
-            onPressed: () {},
-            icon: Icon(
-              Icons.person_rounded,
-              color: context.colorTheme.onSurface,
-              size: 24.sp,
-            ),
-          ),
-          20.horizontalSpace,
-        ],
       ),
-
-      /// 🔥 STATE PRESERVED BETWEEN TABS
       body: IndexedStack(index: _currentIndex, children: _screens),
-
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         onTap: (index) => setState(() => _currentIndex = index),
@@ -86,20 +74,17 @@ class _UserNavigatorState extends State<UserNavigator> {
         selectedItemColor: context.colorTheme.primary,
         unselectedItemColor: context.colorTheme.onSurface.withOpacity(0.6),
         items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
           BottomNavigationBarItem(
-            icon: Icon(Icons.home_rounded),
-            label: "Home",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.agriculture_rounded),
+            icon: Icon(Icons.agriculture),
             label: "Crops",
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.account_balance_rounded),
+            icon: Icon(Icons.account_balance),
             label: "Schemes",
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.show_chart_rounded),
+            icon: Icon(Icons.show_chart),
             label: "Market",
           ),
         ],

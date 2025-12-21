@@ -9,12 +9,22 @@ class FarmerProvider with ChangeNotifier {
   bool _loading = false;
   String? _error;
 
-  bool get loading => _loading;
-  String? get error => _error;
+  bool _initialized = false; // 🔥 KEY
 
   List<Crop> crops = [];
   List<MarketRate> marketRates = [];
   List<GovernmentScheme> schemes = [];
+
+  bool get loading => _loading;
+  String? get error => _error;
+
+  /// 🚀 CALL THIS SAFELY ANYTIME
+  Future<void> initialize() async {
+    if (_initialized) return;
+
+    _initialized = true;
+    await Future.wait([loadCrops(), loadSchemes(), loadMarketRates()]);
+  }
 
   Future<void> loadCrops() async {
     crops = await _wrap(() => _farmerApi.listCropsApiV1FarmerCropsGet()) ?? [];
@@ -34,21 +44,6 @@ class FarmerProvider with ChangeNotifier {
   Future<void> loadSchemes() async {
     schemes =
         await _wrap(() => _farmerApi.listSchemesApiV1FarmerSchemesGet()) ?? [];
-  }
-
-  Future<ChatbotResponse?> askChatbot(String message, String sessionId) {
-    return _wrap(
-      () => _farmerApi.chatbotQueryApiV1FarmerChatbotPost(
-        ChatbotMessage(messageContent: message, sessionId: sessionId),
-      ),
-    );
-  }
-
-  Future<SoilAdvisoryResponse?> getSoilAdvisory(SoilAdvisoryRequest request) {
-    return _wrap(
-      () =>
-          _farmerApi.getSoilAndCropAdvisoryApiV1FarmerAdvisorySoilPost(request),
-    );
   }
 
   Future<T> _wrap<T>(Future<T> Function() action) async {

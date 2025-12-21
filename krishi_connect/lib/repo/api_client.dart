@@ -12,7 +12,7 @@ part of openapi.api;
 
 class ApiClient {
   ApiClient({
-    this.basePath = 'http://localhost',
+    this.basePath = 'http://10.146.133.249:8000',
     this.authentication,
   });
 
