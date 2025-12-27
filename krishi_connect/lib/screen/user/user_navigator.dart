@@ -13,7 +13,7 @@ import 'package:krishi_connect/provider/weather_provider.dart';
 import 'package:krishi_connect/provider/farmer_provider.dart';
 
 import 'package:krishi_connect/screen/user/user_home_screen.dart';
-import 'package:krishi_connect/screen/user/user_crop_screen.dart';
+import 'package:krishi_connect/screen/user/user_query_screen.dart';
 import 'package:krishi_connect/screen/user/user_schemes_screen.dart';
 import 'package:krishi_connect/screen/user/user_market_rate_screen.dart';
 
@@ -29,7 +29,7 @@ class _UserNavigatorState extends State<UserNavigator> {
 
   final _screens = const [
     UserHomeScreen(),
-    UserCropScreen(),
+    UserQueryScreen(),
     UserSchemesScreen(),
     UserMarketRateScreen(),
   ];
@@ -88,8 +88,8 @@ class _UserNavigatorState extends State<UserNavigator> {
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
           BottomNavigationBarItem(
-            icon: Icon(Icons.agriculture),
-            label: "Crops",
+            icon: Icon(Icons.auto_awesome_rounded),
+            label: "Assistant",
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.account_balance),

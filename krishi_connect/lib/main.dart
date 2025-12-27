@@ -8,6 +8,7 @@ import 'package:krishi_connect/provider/admin_provider.dart';
 import 'package:krishi_connect/provider/api_provider.dart';
 import 'package:krishi_connect/provider/auth_provider.dart';
 import 'package:krishi_connect/provider/farmer_provider.dart';
+import 'package:krishi_connect/provider/gemini_provider.dart';
 import 'package:krishi_connect/provider/weather_provider.dart';
 import 'package:krishi_connect/repo/api.dart';
 import 'package:provider/provider.dart';
@@ -31,10 +32,11 @@ class KrishiConnectApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
+        ChangeNotifierProvider(create: (_) => GeminiProvider()),
 
         /// ✅ SINGLE ApiClient INSTANCE
         Provider<ApiClient>(
-          create: (_) => ApiClient(basePath: "http://10.146.133.249:8000"),
+          create: (_) => ApiClient(basePath: "http://192.168.186.249:8001"),
         ),
 
         /// ✅ ApiProvider (REUSED)
