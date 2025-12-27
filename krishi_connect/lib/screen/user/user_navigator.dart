@@ -41,12 +41,11 @@ class _UserNavigatorState extends State<UserNavigator> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
 
-      context.read<WeatherProvider>().fetchFutureWeather(
-        location: "Kopargaon",
-        date: "2026-01-15",
-      );
+      /// 🌦 Fetch 10-day weather forecast (REAL API)
+      context.read<WeatherProvider>().fetchForecast(location: "Kopargaon");
 
-      context.read<FarmerProvider>().initialize(); // ✅ SAFE
+      /// 🌾 Load farmer content
+      context.read<FarmerProvider>().initialize();
     });
   }
 

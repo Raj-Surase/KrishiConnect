@@ -84,30 +84,40 @@ class ForecastDay {
 /* ---------------- DAY SUMMARY ---------------- */
 
 class DayWeather {
-  final double maxTemp;
-  final double minTemp;
-  final double avgTemp;
-  final int humidity;
+  final double maxtempC;
+  final double mintempC;
+  final double avgtempC;
+  final int avghumidity;
   final double uv;
+  final int dailyChanceOfRain;
   final Condition condition;
 
   DayWeather({
-    required this.maxTemp,
-    required this.minTemp,
-    required this.avgTemp,
-    required this.humidity,
+    required this.maxtempC,
+    required this.mintempC,
+    required this.avgtempC,
+    required this.avghumidity,
     required this.uv,
+    required this.dailyChanceOfRain,
     required this.condition,
   });
 
-  factory DayWeather.fromJson(Map<String, dynamic> json) => DayWeather(
-    maxTemp: (json['maxtemp_c'] as num).toDouble(),
-    minTemp: (json['mintemp_c'] as num).toDouble(),
-    avgTemp: (json['avgtemp_c'] as num).toDouble(),
-    humidity: (json['avghumidity'] as num).toInt(), // ✅ FIX
-    uv: (json['uv'] as num).toDouble(),
-    condition: Condition.fromJson(json['condition']),
-  );
+  factory DayWeather.fromJson(Map<String, dynamic> json) {
+    double _d(dynamic v, [double def = 0]) =>
+        v == null ? def : (v as num).toDouble();
+
+    int _i(dynamic v, [int def = 0]) => v == null ? def : (v as num).toInt();
+
+    return DayWeather(
+      maxtempC: _d(json['maxtemp_c']),
+      mintempC: _d(json['mintemp_c']),
+      avgtempC: _d(json['avgtemp_c']),
+      avghumidity: _i(json['avghumidity']),
+      uv: _d(json['uv']),
+      dailyChanceOfRain: _i(json['daily_chance_of_rain']),
+      condition: Condition.fromJson(json['condition'] ?? {}),
+    );
+  }
 }
 
 /* ---------------- ASTRO ---------------- */
@@ -151,7 +161,9 @@ class HourWeather {
     isDay: json['is_day'],
     humidity: (json['humidity'] as num).toInt(), // ✅ FIX
     windKph: (json['wind_kph'] as num).toDouble(),
-    condition: Condition.fromJson(json['condition']),
+    condition: json['condition'] != null
+        ? Condition.fromJson(json['condition'])
+        : Condition(text: "Unknown", icon: ""),
   );
 }
 
