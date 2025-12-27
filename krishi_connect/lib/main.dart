@@ -36,7 +36,7 @@ class KrishiConnectApp extends StatelessWidget {
 
         /// ✅ SINGLE ApiClient INSTANCE
         Provider<ApiClient>(
-          create: (_) => ApiClient(basePath: "http://10.247.87.249:8000"),
+          create: (_) => ApiClient(basePath: "http://10.0.2.2:8000"),
         ),
 
         /// ✅ ApiProvider (REUSED)
