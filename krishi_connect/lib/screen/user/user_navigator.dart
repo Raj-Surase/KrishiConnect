@@ -54,6 +54,7 @@ class _UserNavigatorState extends State<UserNavigator> {
   Widget build(BuildContext context) {
     return AppScaffold(
       appBar: AppBar(
+        elevation: _currentIndex == 1 ? 0 : 4,
         title: Row(
           children: [
             SizedBox(height: 40.h, child: Image.asset(AppAssets.appLogo)),
