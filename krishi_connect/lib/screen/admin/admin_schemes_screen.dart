@@ -57,11 +57,13 @@ class AdminSchemesScreen extends StatelessWidget {
   }
 
   void _openSchemeForm(BuildContext context, {GovernmentScheme? scheme}) {
-    final title = TextEditingController(text: scheme?.title);
-    final link = TextEditingController(text: scheme?.link);
-    final imageUrl = TextEditingController(text: scheme?.imageUrl);
-    final description = TextEditingController(text: scheme?.description);
-    final region = TextEditingController(text: scheme?.region);
+    final _formKey = GlobalKey<FormState>();
+
+    final titleCtrl = TextEditingController(text: scheme?.title);
+    final linkCtrl = TextEditingController(text: scheme?.link);
+    final imageUrlCtrl = TextEditingController(text: scheme?.imageUrl);
+    final descriptionCtrl = TextEditingController(text: scheme?.description);
+    final regionCtrl = TextEditingController(text: scheme?.region);
 
     showModalBottomSheet(
       context: context,
@@ -73,81 +75,150 @@ class AdminSchemesScreen extends StatelessWidget {
           16,
           MediaQuery.of(context).viewInsets.bottom + 16,
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            10.verticalSpace,
-            Text(
-              scheme == null ? "Add Scheme" : "Edit Scheme",
-              style: context.textTheme.titleLarge,
-            ),
-            30.verticalSpace,
-            TextField(
-              controller: title,
-              decoration: const InputDecoration(labelText: "Title"),
-            ),
-            20.verticalSpace,
-            TextField(
-              controller: link,
-              decoration: const InputDecoration(labelText: "Link"),
-            ),
-            20.verticalSpace,
-            TextField(
-              controller: imageUrl,
-              decoration: const InputDecoration(labelText: "Image Url"),
-            ),
-            20.verticalSpace,
-            TextField(
-              controller: region,
-              decoration: const InputDecoration(labelText: "Region"),
-            ),
-            20.verticalSpace,
-            TextField(
-              controller: description,
-              minLines: 3,
-              maxLines: 5,
-              keyboardType: TextInputType.multiline,
-              decoration: const InputDecoration(
-                labelText: "Description",
-                alignLabelWithHint: true,
+        child: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              10.verticalSpace,
+              Text(
+                scheme == null ? "Add Scheme" : "Edit Scheme",
+                style: context.textTheme.titleLarge,
               ),
-            ),
+              30.verticalSpace,
 
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: () async {
-                final admin = context.read<AdminProvider>();
-                final farmer = context.read<FarmerProvider>();
+              /// Title
+              TextFormField(
+                controller: titleCtrl,
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return "Title is required";
+                  }
+                  if (RegExp(r'^\d').hasMatch(value.trim())) {
+                    return "Title should not start with a number";
+                  }
+                  return null;
+                },
+                decoration: const InputDecoration(labelText: "Title"),
+              ),
 
-                if (scheme == null) {
-                  await admin.createScheme(
-                    GovernmentSchemeCreate(
-                      title: title.text,
-                      link: link.text,
-                      description: description.text,
-                      imageUrl: imageUrl.text,
-                      region: region.text,
-                    ),
-                  );
-                } else {
-                  await admin.updateScheme(
-                    scheme.id,
-                    GovernmentSchemeUpdate(
-                      title: title.text,
-                      link: link.text,
-                      description: description.text,
-                      imageUrl: imageUrl.text,
-                      region: region.text,
-                    ),
-                  );
-                }
+              20.verticalSpace,
 
-                await farmer.loadSchemes();
-                Navigator.pop(context);
-              },
-              child: const Text("Save"),
-            ),
-          ],
+              /// Link
+              TextFormField(
+                controller: linkCtrl,
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return "Link is required";
+                  }
+                  if (!value.contains("https://")) {
+                    return "Link must contain https://";
+                  }
+                  return null;
+                },
+                decoration: const InputDecoration(labelText: "Link"),
+              ),
+
+              20.verticalSpace,
+
+              /// Image URL
+              TextFormField(
+                controller: imageUrlCtrl,
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return "Image URL is required";
+                  }
+                  if (!value.contains("https://")) {
+                    return "Image URL must contain https://";
+                  }
+                  return null;
+                },
+                decoration: const InputDecoration(labelText: "Image Url"),
+              ),
+
+              20.verticalSpace,
+
+              /// Region
+              TextFormField(
+                controller: regionCtrl,
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return "Region is required";
+                  }
+                  if (!RegExp(r'^[A-Za-z\s]+$').hasMatch(value.trim())) {
+                    return "Region should contain only characters";
+                  }
+                  return null;
+                },
+                decoration: const InputDecoration(labelText: "Region"),
+              ),
+
+              20.verticalSpace,
+
+              /// Description
+              TextFormField(
+                controller: descriptionCtrl,
+                minLines: 3,
+                maxLines: 5,
+                keyboardType: TextInputType.multiline,
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return "Description is required";
+                  }
+                  if (value.trim().length < 10) {
+                    return "Description must be at least 10 characters";
+                  }
+                  if (RegExp(r'^\d').hasMatch(value.trim())) {
+                    return "Description should not start with a number";
+                  }
+                  return null;
+                },
+                decoration: const InputDecoration(
+                  labelText: "Description",
+                  alignLabelWithHint: true,
+                ),
+              ),
+
+              const SizedBox(height: 16),
+
+              /// Save Button
+              ElevatedButton(
+                onPressed: () async {
+                  if (!_formKey.currentState!.validate()) return;
+
+                  final admin = context.read<AdminProvider>();
+                  final farmer = context.read<FarmerProvider>();
+
+                  if (scheme == null) {
+                    await admin.createScheme(
+                      GovernmentSchemeCreate(
+                        title: titleCtrl.text.trim(),
+                        link: linkCtrl.text.trim(),
+                        description: descriptionCtrl.text.trim(),
+                        imageUrl: imageUrlCtrl.text.trim(),
+                        region: regionCtrl.text.trim(),
+                      ),
+                    );
+                  } else {
+                    await admin.updateScheme(
+                      scheme.id,
+                      GovernmentSchemeUpdate(
+                        title: titleCtrl.text.trim(),
+                        link: linkCtrl.text.trim(),
+                        description: descriptionCtrl.text.trim(),
+                        imageUrl: imageUrlCtrl.text.trim(),
+                        region: regionCtrl.text.trim(),
+                      ),
+                    );
+                  }
+
+                  await farmer.loadSchemes();
+                  Navigator.pop(context);
+                },
+                child: const Text("Save"),
+              ),
+            ],
+          ),
         ),
       ),
     );

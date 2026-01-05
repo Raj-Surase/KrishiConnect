@@ -410,8 +410,8 @@ class AppTheme {
         elevation: 1,
       );
 
-  static BottomAppBarTheme _bottomAppBarTheme(ColorScheme c) =>
-      BottomAppBarTheme(
+  static BottomAppBarThemeData _bottomAppBarTheme(ColorScheme c) =>
+      BottomAppBarThemeData(
         elevation: 4,
         color: c.surface,
         shadowColor: c.onBackground.withOpacity(0.3),

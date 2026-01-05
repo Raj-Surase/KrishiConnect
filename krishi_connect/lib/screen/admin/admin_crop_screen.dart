@@ -67,10 +67,57 @@ class AdminCropScreen extends StatelessWidget {
   }
 
   void _openCropForm(BuildContext context, {Crop? crop}) {
+    final _formKey = GlobalKey<FormState>();
+
     final nameCtrl = TextEditingController(text: crop?.name);
     final detailsCtrl = TextEditingController(text: crop?.details);
     final imageUrlCtrl = TextEditingController(text: crop?.imageUrl);
     final contextCtrl = TextEditingController(text: crop?.context);
+
+    String? _nameValidator(String? value) {
+      if (value == null || value.trim().isEmpty) {
+        return "Name is required";
+      }
+      if (RegExp(r'\d').hasMatch(value)) {
+        return "Name should not contain numbers";
+      }
+      return null;
+    }
+
+    String? _urlValidator(String? value) {
+      if (value == null || value.trim().isEmpty) {
+        return "Image URL is required";
+      }
+      if (!value.startsWith("https://")) {
+        return "URL must start with https://";
+      }
+      return null;
+    }
+
+    String? _detailsValidator(String? value) {
+      if (value == null || value.trim().isEmpty) {
+        return "Details are required";
+      }
+      if (!RegExp(r'^[A-Za-z]').hasMatch(value.trim())) {
+        return "Details must start with a character";
+      }
+      return null;
+    }
+
+    String? _contextValidator(String? value) {
+      if (value == null || value.trim().isEmpty) {
+        return "Context is required";
+      }
+      if (!RegExp(r'^[A-Za-z]').hasMatch(value.trim())) {
+        return "Context must start with a character";
+      }
+
+      final wordCount = value.trim().split(RegExp(r'\s+')).length;
+      if (wordCount < 10) {
+        return "Context must be at least 10 words long";
+      }
+      return null;
+    }
 
     showModalBottomSheet(
       context: context,
@@ -83,80 +130,102 @@ class AdminCropScreen extends StatelessWidget {
             16,
             MediaQuery.of(context).viewInsets.bottom + 16,
           ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              10.verticalSpace,
-              Text(
-                crop == null ? "Add Crop" : "Edit Crop",
-                style: context.textTheme.titleLarge,
-              ),
-              30.verticalSpace,
-              TextField(
-                controller: nameCtrl,
-                decoration: const InputDecoration(labelText: "Name"),
-              ),
-              20.verticalSpace,
-              TextField(
-                controller: imageUrlCtrl,
-                decoration: const InputDecoration(labelText: "Image Url"),
-              ),
-              20.verticalSpace,
-              TextField(
-                controller: detailsCtrl,
-                minLines: 3,
-                maxLines: 5,
-                keyboardType: TextInputType.multiline,
-                decoration: const InputDecoration(
-                  labelText: "Details",
-                  alignLabelWithHint: true,
+          child: Form(
+            key: _formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                10.verticalSpace,
+                Text(
+                  crop == null ? "Add Crop" : "Edit Crop",
+                  style: context.textTheme.titleLarge,
                 ),
-              ),
-              20.verticalSpace,
-              TextField(
-                controller: contextCtrl,
-                minLines: 3,
-                maxLines: 5,
-                keyboardType: TextInputType.multiline,
-                decoration: const InputDecoration(
-                  labelText: "Context",
-                  alignLabelWithHint: true,
+                30.verticalSpace,
+
+                /// Name
+                TextFormField(
+                  controller: nameCtrl,
+                  validator: _nameValidator,
+                  decoration: const InputDecoration(labelText: "Name"),
                 ),
-              ),
 
-              const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: () async {
-                  final admin = context.read<AdminProvider>();
-                  final farmer = context.read<FarmerProvider>();
+                20.verticalSpace,
 
-                  if (crop == null) {
-                    await admin.createCrop(
-                      CropCreate(
-                        name: nameCtrl.text,
-                        imageUrl: imageUrlCtrl.text,
-                        details: detailsCtrl.text,
-                        context: contextCtrl.text,
-                      ),
-                    );
-                  } else {
-                    await admin.updateCrop(
-                      crop.id,
-                      CropUpdate(
-                        name: nameCtrl.text,
-                        imageUrl: imageUrlCtrl.text,
-                        details: detailsCtrl.text,
-                        context: contextCtrl.text,
-                      ),
-                    );
-                  }
+                /// Image URL
+                TextFormField(
+                  controller: imageUrlCtrl,
+                  validator: _urlValidator,
+                  decoration: const InputDecoration(labelText: "Image Url"),
+                ),
 
-                  await farmer.loadCrops();
-                  Navigator.pop(context);
-                },
-                child: const Text("Save"),
-              ),
-            ],
+                20.verticalSpace,
+
+                /// Details
+                TextFormField(
+                  controller: detailsCtrl,
+                  validator: _detailsValidator,
+                  minLines: 3,
+                  maxLines: 5,
+                  keyboardType: TextInputType.multiline,
+                  decoration: const InputDecoration(
+                    labelText: "Details",
+                    alignLabelWithHint: true,
+                  ),
+                ),
+
+                20.verticalSpace,
+
+                /// Context
+                TextFormField(
+                  controller: contextCtrl,
+                  validator: _contextValidator,
+                  minLines: 3,
+                  maxLines: 5,
+                  keyboardType: TextInputType.multiline,
+                  decoration: const InputDecoration(
+                    labelText: "Context",
+                    alignLabelWithHint: true,
+                  ),
+                ),
+
+                const SizedBox(height: 16),
+
+                /// Save Button
+                ElevatedButton(
+                  onPressed: () async {
+                    if (!_formKey.currentState!.validate()) return;
+
+                    final admin = context.read<AdminProvider>();
+                    final farmer = context.read<FarmerProvider>();
+
+                    if (crop == null) {
+                      await admin.createCrop(
+                        CropCreate(
+                          name: nameCtrl.text.trim(),
+                          imageUrl: imageUrlCtrl.text.trim(),
+                          details: detailsCtrl.text.trim(),
+                          context: contextCtrl.text.trim(),
+                        ),
+                      );
+                    } else {
+                      await admin.updateCrop(
+                        crop.id,
+                        CropUpdate(
+                          name: nameCtrl.text.trim(),
+                          imageUrl: imageUrlCtrl.text.trim(),
+                          details: detailsCtrl.text.trim(),
+                          context: contextCtrl.text.trim(),
+                        ),
+                      );
+                    }
+
+                    await farmer.loadCrops();
+                    Navigator.pop(context);
+                  },
+                  child: const Text("Save"),
+                ),
+              ],
+            ),
           ),
         );
       },

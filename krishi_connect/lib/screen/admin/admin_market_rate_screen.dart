@@ -48,15 +48,20 @@ class AdminMarketRateScreen extends StatelessWidget {
 
   void _openMarketRateForm(BuildContext context) {
     final farmer = context.read<FarmerProvider>();
+    final _formKey = GlobalKey<FormState>();
 
     int? cropId;
     DateTime? selectedDate;
 
-    final location = TextEditingController();
-    final minPrice = TextEditingController();
-    final maxPrice = TextEditingController();
-    final expectedPrice = TextEditingController();
+    final locationCtrl = TextEditingController();
+    final minPriceCtrl = TextEditingController();
+    final maxPriceCtrl = TextEditingController();
+    final expectedPriceCtrl = TextEditingController();
     final dateCtrl = TextEditingController();
+
+    num? _minPrice() => num.tryParse(minPriceCtrl.text);
+    num? _maxPrice() => num.tryParse(maxPriceCtrl.text);
+    num? _expectedPrice() => num.tryParse(expectedPriceCtrl.text);
 
     Future<void> _pickDate(BuildContext context) async {
       final now = DateTime.now();
@@ -80,9 +85,7 @@ class AdminMarketRateScreen extends StatelessWidget {
       backgroundColor: Colors.transparent,
       builder: (_) => SafeArea(
         child: ClipRRect(
-          borderRadius: BorderRadiusGeometry.vertical(
-            top: Radius.circular(40.r),
-          ),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(40.r)),
           child: Container(
             color: context.colorTheme.surface,
             child: Padding(
@@ -93,99 +96,180 @@ class AdminMarketRateScreen extends StatelessWidget {
                 bottom: MediaQuery.of(context).viewInsets.bottom + 16,
               ),
               child: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    10.verticalSpace,
-                    Text(
-                      "Add Market Rate",
-                      style: context.textTheme.titleLarge,
-                    ),
-                    30.verticalSpace,
-
-                    /// Crop
-                    DropdownButtonFormField<int>(
-                      items: farmer.crops
-                          .map(
-                            (c) => DropdownMenuItem(
-                              value: c.id,
-                              child: Text(c.name),
-                            ),
-                          )
-                          .toList(),
-                      onChanged: (v) => cropId = v,
-                      decoration: const InputDecoration(labelText: "Crop"),
-                    ),
-                    20.verticalSpace,
-
-                    /// Location
-                    TextField(
-                      controller: location,
-                      decoration: const InputDecoration(labelText: "Location"),
-                    ),
-                    20.verticalSpace,
-
-                    /// Date Picker
-                    TextField(
-                      controller: dateCtrl,
-                      readOnly: true,
-                      onTap: () => _pickDate(context),
-                      decoration: const InputDecoration(
-                        labelText: "Date",
-                        suffixIcon: Icon(Icons.calendar_today),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      10.verticalSpace,
+                      Text(
+                        "Add Market Rate",
+                        style: context.textTheme.titleLarge,
                       ),
-                    ),
-                    20.verticalSpace,
+                      30.verticalSpace,
 
-                    /// Prices
-                    TextField(
-                      controller: minPrice,
-                      keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(labelText: "Min Price"),
-                    ),
-                    20.verticalSpace,
-                    TextField(
-                      controller: maxPrice,
-                      keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(labelText: "Max Price"),
-                    ),
-                    20.verticalSpace,
-                    TextField(
-                      controller: expectedPrice,
-                      keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(
-                        labelText: "Expected Price",
+                      /// Crop
+                      DropdownButtonFormField<int>(
+                        items: farmer.crops
+                            .map(
+                              (c) => DropdownMenuItem(
+                                value: c.id,
+                                child: Text(c.name),
+                              ),
+                            )
+                            .toList(),
+                        onChanged: (v) => cropId = v,
+                        validator: (v) =>
+                            v == null ? "Please select a crop" : null,
+                        decoration: const InputDecoration(labelText: "Crop"),
                       ),
-                    ),
-                    30.verticalSpace,
+                      20.verticalSpace,
 
-                    /// Save
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: () async {
-                          if (cropId == null || selectedDate == null) return;
-
-                          await context.read<AdminProvider>().createMarketRate(
-                            MarketRateCreate(
-                              cropId: cropId!,
-                              location: location.text,
-                              date: selectedDate!,
-                              minPrice: num.parse(minPrice.text),
-                              maxPrice: num.parse(maxPrice.text),
-                              expectedPrice: expectedPrice.text.isEmpty
-                                  ? null
-                                  : num.parse(expectedPrice.text),
-                            ),
-                          );
-
-                          await farmer.loadMarketRates();
-                          Navigator.pop(context);
+                      /// Location
+                      TextFormField(
+                        controller: locationCtrl,
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return "Location is required";
+                          }
+                          if (value.length < 2) {
+                            return "Location must be at least 2 characters";
+                          }
+                          if (!RegExp(r'^\d').hasMatch(value.trim())) {
+                            return "Location must start with a number";
+                          }
+                          return null;
                         },
-                        child: const Text("Save"),
+                        decoration: const InputDecoration(
+                          labelText: "Location",
+                        ),
                       ),
-                    ),
-                  ],
+                      20.verticalSpace,
+
+                      /// Date
+                      TextFormField(
+                        controller: dateCtrl,
+                        readOnly: true,
+                        onTap: () => _pickDate(context),
+                        validator: (_) => selectedDate == null
+                            ? "Please select a date"
+                            : null,
+                        decoration: const InputDecoration(
+                          labelText: "Date",
+                          suffixIcon: Icon(Icons.calendar_today),
+                        ),
+                      ),
+                      20.verticalSpace,
+
+                      /// Min Price
+                      TextFormField(
+                        controller: minPriceCtrl,
+                        keyboardType: TextInputType.number,
+                        validator: (value) {
+                          final min = _minPrice();
+                          final max = _maxPrice();
+
+                          if (value == null || value.isEmpty) {
+                            return "Min price is required";
+                          }
+                          if (min == null) {
+                            return "Min price must be a number";
+                          }
+                          if (max != null && min >= max) {
+                            return "Min price must be less than max price";
+                          }
+                          return null;
+                        },
+                        decoration: const InputDecoration(
+                          labelText: "Min Price",
+                        ),
+                      ),
+                      20.verticalSpace,
+
+                      /// Max Price
+                      TextFormField(
+                        controller: maxPriceCtrl,
+                        keyboardType: TextInputType.number,
+                        validator: (value) {
+                          final min = _minPrice();
+                          final max = _maxPrice();
+
+                          if (value == null || value.isEmpty) {
+                            return "Max price is required";
+                          }
+                          if (max == null) {
+                            return "Max price must be a number";
+                          }
+                          if (min != null && max <= min) {
+                            return "Max price must be greater than min price";
+                          }
+                          return null;
+                        },
+                        decoration: const InputDecoration(
+                          labelText: "Max Price",
+                        ),
+                      ),
+                      20.verticalSpace,
+
+                      /// Expected Price
+                      TextFormField(
+                        controller: expectedPriceCtrl,
+                        keyboardType: TextInputType.number,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) return null;
+
+                          final exp = _expectedPrice();
+                          final min = _minPrice();
+                          final max = _maxPrice();
+
+                          if (exp == null) {
+                            return "Expected price must be a number";
+                          }
+                          if (min != null && exp <= min) {
+                            return "Expected price must be greater than min price";
+                          }
+                          if (max != null && exp >= max) {
+                            return "Expected price must be less than max price";
+                          }
+                          return null;
+                        },
+                        decoration: const InputDecoration(
+                          labelText: "Expected Price",
+                        ),
+                      ),
+                      30.verticalSpace,
+
+                      /// Save
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: () async {
+                            if (!_formKey.currentState!.validate()) return;
+
+                            await context
+                                .read<AdminProvider>()
+                                .createMarketRate(
+                                  MarketRateCreate(
+                                    cropId: cropId!,
+                                    location: locationCtrl.text.trim(),
+                                    date: selectedDate!,
+                                    minPrice: _minPrice()!,
+                                    maxPrice: _maxPrice()!,
+                                    expectedPrice:
+                                        expectedPriceCtrl.text.isEmpty
+                                        ? null
+                                        : _expectedPrice(),
+                                  ),
+                                );
+
+                            await farmer.loadMarketRates();
+                            Navigator.pop(context);
+                          },
+                          child: const Text("Save"),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
